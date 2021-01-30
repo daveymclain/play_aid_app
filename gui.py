@@ -1,3 +1,6 @@
+import pygame
+
+
 class Button:
     def __init__(self, surface, name="button", colour=(255, 0, 0), colour_pressed=(100, 0, 0),
                  pos=(50, 100), size=(200, 50), rounded_corner=5, text_colour=(0, 0, 0), text_size=32):

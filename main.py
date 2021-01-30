@@ -14,7 +14,10 @@ window = pygame.display.set_mode(WINDOW_DIMENSIONS, 0, 32)
 
 
 def main_menu():
+    add_button = gui.Button(window)
     while True:
+        add_button.draw()
+        add_button.collide_point(pygame.mouse.get_pos())
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
