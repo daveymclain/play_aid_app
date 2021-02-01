@@ -21,8 +21,8 @@ class Button:
             pygame.draw.rect(self.surface, self.button_attr["colour"], self.rect,
                              border_radius=self.button_attr["rounded_corner"])
         self.surface.blit(self.text, (
-        self.button_attr["button_pos"][0] + self.button_attr["button_size"][0] // 2 - self.text.get_width() // 2,
-        self.button_attr["button_pos"][1] + self.button_attr["button_size"][1] // 2 - self.text.get_height() // 2))
+            self.button_attr["button_pos"][0] + self.button_attr["button_size"][0] // 2 - self.text.get_width() // 2,
+            self.button_attr["button_pos"][1] + self.button_attr["button_size"][1] // 2 - self.text.get_height() // 2))
 
     def collide_point(self, pos):
         self.mouse_over = self.rect.collidepoint(pos)
