@@ -8,6 +8,7 @@ main_clock = pygame.time.Clock()
 pygame.init()
 pygame.display.set_caption('Play Aid!')
 window = pygame.display.set_mode(WINDOW_DIMENSIONS, 0, 32)
+font = pygame.font.SysFont("comicsansms", 72)
 
 
 def event_manager(click, release, sub_menu=False):
@@ -58,11 +59,21 @@ def main_menu():
 def new_toy_menu():
     run = True
     click, release = False, False
+    text_input_box = gui.TextInputBox(50, 50, 400, font)
+    group = pygame.sprite.Group(text_input_box)
     while run:
         window.fill((255, 255, 255))
-        pygame.display.update()
+        # click, release, run = event_manager(click, release, sub_menu=True)
         main_clock.tick(60)
-        click, release, run = event_manager(click, release, sub_menu=True)
+        event_list = pygame.event.get()
+        for event in event_list:
+            if event.type == pygame.QUIT:
+                run = False
+        group.update(event_list)
+
+        window.fill(0)
+        group.draw(window)
+        pygame.display.flip()
 
 
 if __name__ == "__main__":
