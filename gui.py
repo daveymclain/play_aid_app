@@ -4,6 +4,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (127, 127, 127)
 
+
 class Button:
     def __init__(self, surface, name="button", colour=(255, 0, 0), colour_pressed=(100, 0, 0),
                  pos=(50, 100), size=(200, 50), rounded_corner=5, text_colour=(0, 0, 0), text_size=32):
@@ -45,6 +46,7 @@ class TextInputBox(pygame.sprite.Sprite):
 
     def render_text(self):
         t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
+        curs_pos_x = t_surf.get_width() + 5
         self.image = pygame.Surface((max(self.width, t_surf.get_width() + 10), t_surf.get_height() + 10),
                                     pygame.SRCALPHA)
         if self.backcolor:
@@ -52,16 +54,17 @@ class TextInputBox(pygame.sprite.Sprite):
         self.image.blit(t_surf, (5, 5))
         if self.active:
             outline_colour = WHITE
+            pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
         else:
             outline_colour = GREY
         pygame.draw.rect(self.image, outline_colour, self.image.get_rect().inflate(-2, -2), 2)
+
         self.rect = self.image.get_rect(topleft=self.pos)
 
     def update(self, event_list):
         for event in event_list:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
-                print(f"active {self.active}")
                 self.render_text()
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
