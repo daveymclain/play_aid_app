@@ -82,6 +82,7 @@ class TextInputBox(pygame.sprite.Sprite):
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
                     self.active = False
+                    self.render_text()
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
