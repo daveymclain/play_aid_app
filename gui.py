@@ -43,6 +43,8 @@ class TextInputBox(pygame.sprite.Sprite):
         self.active = False
         self.text = ""
         self.render_text()
+        self.tick = 0
+        self.flash = False
 
     def render_text(self):
         t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
@@ -54,7 +56,10 @@ class TextInputBox(pygame.sprite.Sprite):
         self.image.blit(t_surf, (5, 5))
         if self.active:
             outline_colour = WHITE
-            pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
+            if self.flash:
+                pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
+            else:
+                pygame.draw.rect(self.image, GREY, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
         else:
             outline_colour = GREY
         pygame.draw.rect(self.image, outline_colour, self.image.get_rect().inflate(-2, -2), 2)
@@ -62,10 +67,17 @@ class TextInputBox(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=self.pos)
 
     def update(self, event_list):
+        if self.tick > 40:
+            self.tick = 0
+            if self.flash:
+                self.flash = False
+            else:
+                self.flash = True
+        else:
+            self.tick += 1
         for event in event_list:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
-                self.render_text()
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
                     self.active = False
@@ -73,4 +85,5 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
-                self.render_text()
+        if self.active:
+            self.render_text()
