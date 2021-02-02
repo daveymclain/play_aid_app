@@ -48,18 +48,22 @@ class TextInputBox(pygame.sprite.Sprite):
 
     def render_text(self):
         t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
+        margin = int(t_surf.get_height() * 0.1)
         curs_pos_x = t_surf.get_width() + 5
-        self.image = pygame.Surface((max(self.width, t_surf.get_width() + 10), t_surf.get_height() + 10),
+        self.image = pygame.Surface((max(self.width, t_surf.get_width() + margin),
+                                     t_surf.get_height() + margin),
                                     pygame.SRCALPHA)
         if self.backcolor:
             self.image.fill(self.backcolor)
-        self.image.blit(t_surf, (5, 5))
+        self.image.blit(t_surf, (0, 0))
         if self.active:
             outline_colour = WHITE
             if self.flash:
-                pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
+                pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, int(margin * 2)),
+                                                                (4, self.image.get_height() - int(margin * 4))))
             else:
-                pygame.draw.rect(self.image, GREY, pygame.Rect((curs_pos_x, 20), (4, self.image.get_height() - 40)))
+                pygame.draw.rect(self.image, GREY, pygame.Rect((curs_pos_x, int(margin * 2)),
+                                                                (4, self.image.get_height() - int(margin * 4))))
         else:
             outline_colour = GREY
         pygame.draw.rect(self.image, outline_colour, self.image.get_rect().inflate(-2, -2), 2)
