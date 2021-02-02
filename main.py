@@ -9,7 +9,7 @@ main_clock = pygame.time.Clock()
 pygame.init()
 pygame.display.set_caption('Play Aid!')
 window = pygame.display.set_mode(WINDOW_DIMENSIONS, 0, 32)
-font = pygame.font.SysFont("comicsansms", 72)
+font = pygame.font.SysFont("comicsansms", 20)
 
 
 def click_manager(click, release, events, sub_menu=False):
@@ -61,7 +61,7 @@ def main_menu():
 def new_toy_menu():
     run = True
     click, release = False, False
-    text_input_box = gui.TextInputBox(50, 50, 400, font)
+    text_input_box = gui.TextInputBox(10, 10, 400, font)
     group = pygame.sprite.Group(text_input_box)
     while run:
         window.fill(BLACK)
