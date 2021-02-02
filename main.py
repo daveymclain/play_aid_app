@@ -3,6 +3,7 @@ import pygame, sys
 from pygame.locals import *
 
 WINDOW_DIMENSIONS = (700, 500)
+BLACK = (0, 0, 0)
 
 main_clock = pygame.time.Clock()
 pygame.init()
@@ -45,7 +46,7 @@ def main_menu():
     add_button = gui.Button(window, name="New Toy", pos=(10, 10))
     click, release = False, False
     while True:
-        window.fill((0, 0, 0))
+        window.fill(BLACK)
         add_button.collide_point(pygame.mouse.get_pos())
         add_button.draw(click)
         pygame.display.update()
@@ -63,12 +64,9 @@ def new_toy_menu():
     text_input_box = gui.TextInputBox(50, 50, 400, font)
     group = pygame.sprite.Group(text_input_box)
     while run:
-        window.fill((0, 0, 0))
+        window.fill(BLACK)
         event_list = pygame.event.get()
         click, release, run = click_manager(click, release, event_list, sub_menu=True)
-        for event in event_list:
-            if event.type == pygame.QUIT:
-                run = False
         group.update(event_list)
         main_clock.tick(60)
         group.draw(window)
