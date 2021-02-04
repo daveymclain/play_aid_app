@@ -34,7 +34,7 @@ class Button:
 
 
 class TextInputBox(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, font):
+    def __init__(self, x, y, w, font, default_text=""):
         super().__init__()
         self.text_colour = WHITE
         self.backcolor = None
@@ -43,13 +43,19 @@ class TextInputBox(pygame.sprite.Sprite):
         self.font = font
         self.active = False
         self.text = ""
-        self.render_text()
         self.tick = 0
         self.flash = False
         self.backspace = {"pressed": False, "pressed_start_time": 0.0}
+        self.default_text = default_text
+
+        self.render_text()
 
     def render_text(self):
-        t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
+        if not self.text and not self.active:
+            display_text = self.default_text
+        else:
+            display_text = self.text
+        t_surf = self.font.render(display_text, True, self.text_colour, self.backcolor)
         margin = int(t_surf.get_height() * 0.1)
         curs_pos_x = t_surf.get_width() + 5
         self.image = pygame.Surface((max(self.width, t_surf.get_width() + margin * 2),
