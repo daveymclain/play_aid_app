@@ -1,4 +1,5 @@
-import pygame
+import pygame, time
+
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -45,6 +46,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.render_text()
         self.tick = 0
         self.flash = False
+        self.backspace = {"pressed": False, "pressed_start_time": 0.0}
 
     def render_text(self):
         t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
@@ -71,7 +73,8 @@ class TextInputBox(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=self.pos)
 
     def update(self, event_list):
-        print(event_list)
+        if time.time() - self.backspace["pressed_start_time"] > 0.5 and self.backspace["pressed"]:
+            self.text = self.text[:-1]
         if self.tick > 40:
             self.tick = 0
             if self.flash:
@@ -84,15 +87,20 @@ class TextInputBox(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
                 self.render_text()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_BACKSPACE:
+                    self.backspace["pressed"] = False
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
                     self.active = False
                     self.render_text()
                 elif event.key == pygame.K_BACKSPACE:
+                    self.backspace["pressed_start_time"] = time.time()
+                    self.backspace["pressed"] = True
                     self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-            if event.type == pygame.TEXTINPUT:
+                # else:
+                #     self.text += event.unicode
+            if event.type == pygame.TEXTINPUT and self.active:
                 self.text += event.text
 
         if self.active:
