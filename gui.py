@@ -106,7 +106,6 @@ class TextInputBox(pygame.sprite.Sprite):
     def backspace_cont_press(self, delay):
         """When the backspace key is pressed for longer than the delay. delete from self.text once a frame"""
         if time.time() - self.backspace["pressed_start_time"] > delay and self.backspace["pressed"]:
-
             if self.cursor_index == -1:
                 self.text = self.text[:-1]
             elif self.cursor_index == -2:
@@ -119,7 +118,6 @@ class TextInputBox(pygame.sprite.Sprite):
                 if self.cursor_index == -1:
                     self.cursor_index = -2
         self.update_t_surf()
-
 
     def render_text(self):
         if not self.text and not self.active:
@@ -191,6 +189,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.text += event.text
                 elif self.cursor_index == -2:
                     self.text = event.text + self.text
+                    self.cursor_index = 0
                 else:
                     first_half = self.text[:self.cursor_index + 1]
                     second_half = self.text[self.cursor_index + 1:]
