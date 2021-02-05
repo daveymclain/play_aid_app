@@ -1,6 +1,5 @@
 import pygame, time
 
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (127, 127, 127)
@@ -47,23 +46,39 @@ class TextInputBox(pygame.sprite.Sprite):
         self.flash = False
         self.backspace = {"pressed": False, "pressed_start_time": 0.0}
         self.default_text = default_text
+        self.text_widths = {"current": 0}
+        self.t_surf = None
+        self.cursor_index = -1
 
         self.render_text()
 
+    def store_text_width(self, character=""):
+        self.t_surf = self.font.render(self.text, True, self.text_colour, self.backcolor)
+        if character:
+            self.text_widths[character] = self.t_surf.get_width() - self.text_widths["current"]
+
+        self.text_widths["current"] = self.t_surf.get_width()
+
     def render_text(self):
         if not self.text and not self.active:
-            display_text = self.default_text
+            self.t_surf = self.font.render(self.default_text, True, self.text_colour, self.backcolor)
+
+        margin = int(self.t_surf.get_height() * 0.1)
+        if self.cursor_index == -1:
+            curs_pos_x = self.text_widths["current"] + 5
         else:
-            display_text = self.text
-        t_surf = self.font.render(display_text, True, self.text_colour, self.backcolor)
-        margin = int(t_surf.get_height() * 0.1)
-        curs_pos_x = t_surf.get_width() + 5
-        self.image = pygame.Surface((max(self.width, t_surf.get_width() + margin * 2),
-                                     t_surf.get_height() + margin),
+            running_width = 0
+            for ind, character in enumerate(self.text):
+                running_width += self.text_widths[character]
+                if ind == self.cursor_index:
+                    curs_pos_x = running_width + 5
+                    break
+        self.image = pygame.Surface((max(self.width, self.text_widths["current"] + margin * 2),
+                                     self.t_surf.get_height() + margin),
                                     pygame.SRCALPHA)
         if self.backcolor:
             self.image.fill(self.backcolor)
-        self.image.blit(t_surf, (5, 0))
+        self.image.blit(self.t_surf, (5, 0))
         if self.active:
             outline_colour = WHITE
             if self.flash:
@@ -81,6 +96,7 @@ class TextInputBox(pygame.sprite.Sprite):
     def update(self, event_list):
         if time.time() - self.backspace["pressed_start_time"] > 0.5 and self.backspace["pressed"]:
             self.text = self.text[:-1]
+            self.store_text_width()
         if self.tick > 40:
             self.tick = 0
             if self.flash:
@@ -92,22 +108,45 @@ class TextInputBox(pygame.sprite.Sprite):
         for event in event_list:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
+                self.store_text_width()
                 self.render_text()
+                if self.active:
+                    mouse_pos_x = event.pos[0]
+                    running_width = 0
+                    for ind, character in enumerate(self.text):
+                        running_width += self.text_widths[character]
+                        if mouse_pos_x > running_width:
+                            self.cursor_index = ind
+                            print(f"index {self.cursor_index}")
+                            if len(self.text) == self.cursor_index + 1:
+                                self.cursor_index = -1
+                            # break
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_BACKSPACE:
                     self.backspace["pressed"] = False
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
                     self.active = False
+                    self.store_text_width()
                     self.render_text()
                 elif event.key == pygame.K_BACKSPACE:
                     self.backspace["pressed_start_time"] = time.time()
                     self.backspace["pressed"] = True
                     self.text = self.text[:-1]
-                # else:
-                #     self.text += event.unicode
+                    self.store_text_width()
+                    if self.cursor_index != -1:
+                        self.cursor_index -= 1
             if event.type == pygame.TEXTINPUT and self.active:
-                self.text += event.text
+                if self.cursor_index == -1:
+                    self.text += event.text
+                    self.store_text_width(event.text)
+                else:
+                    first_half = self.text[:self.cursor_index]
+                    second_half = self.text[self.cursor_index:]
+                    first_half += event.text
+                    self.cursor_index += 1
+                    self.text = first_half + second_half
+                    self.store_text_width(event.text)
 
         if self.active:
             self.render_text()
