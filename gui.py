@@ -134,6 +134,28 @@ class TextInputBox(pygame.sprite.Sprite):
             self.text = first_half + second_half
         self.update_t_surf(character)
 
+    def move_cursor_with_arrows(self, direction):
+        """Move the cursor left or right with the left and right arrows"""
+        if direction == "left":
+            if self.cursor_index == -2:
+                pass
+            elif self.cursor_index == -1:
+                self.cursor_index = len(self.text) - 2
+            else:
+                self.cursor_index -= 1
+                if self.cursor_index == -1:
+                    self.cursor_index = -2
+        else:
+            if self.cursor_index == -1:
+                pass
+            elif self.cursor_index == -2:
+                self.cursor_index = 0
+            else:
+                self.cursor_index += 1
+                if self.cursor_index == len(self.text) - 1:
+                    self.cursor_index = -1
+
+
     def render_text(self):
         if not self.text and not self.active:
             self.t_surf = self.font.render(self.default_text, True, self.text_colour, self.backcolor)
@@ -167,6 +189,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.backspace_cont_press(0.5)
 
         for event in event_list:
+            print(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
                 self.update_t_surf()
@@ -178,6 +201,13 @@ class TextInputBox(pygame.sprite.Sprite):
                 if event.key == pygame.K_BACKSPACE:
                     self.backspace["pressed"] = False
             if event.type == pygame.KEYDOWN and self.active:
+
+                if event.key == pygame.K_LEFT:
+                    self.move_cursor_with_arrows("left")
+                if event.key == pygame.K_RIGHT:
+                    self.move_cursor_with_arrows("right")
+
+
                 if event.key == pygame.K_RETURN:
                     self.active = False
                     self.update_t_surf()
