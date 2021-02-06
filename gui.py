@@ -119,6 +119,21 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.cursor_index = -2
         self.update_t_surf()
 
+    def text_input(self, character):
+        """updates the self.text when an input key is pressed"""
+        if self.cursor_index == -1:
+            self.text += character
+        elif self.cursor_index == -2:
+            self.text = character + self.text
+            self.cursor_index = 0
+        else:
+            first_half = self.text[:self.cursor_index + 1]
+            second_half = self.text[self.cursor_index + 1:]
+            first_half += character
+            self.cursor_index += 1
+            self.text = first_half + second_half
+        self.update_t_surf(character)
+
     def render_text(self):
         if not self.text and not self.active:
             self.t_surf = self.font.render(self.default_text, True, self.text_colour, self.backcolor)
@@ -174,7 +189,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.backspace["pressed"] = True
 
                     if self.cursor_index != -1:
-                        first_half = self.text[:self.cursor_index ]
+                        first_half = self.text[:self.cursor_index]
                         second_half = self.text[self.cursor_index + 1:]
                         self.text = first_half + second_half
                         self.cursor_index -= 1
@@ -185,18 +200,7 @@ class TextInputBox(pygame.sprite.Sprite):
                         self.text = self.text[:-1]
                     self.update_t_surf()
             if event.type == pygame.TEXTINPUT and self.active:
-                if self.cursor_index == -1:
-                    self.text += event.text
-                elif self.cursor_index == -2:
-                    self.text = event.text + self.text
-                    self.cursor_index = 0
-                else:
-                    first_half = self.text[:self.cursor_index + 1]
-                    second_half = self.text[self.cursor_index + 1:]
-                    first_half += event.text
-                    self.cursor_index += 1
-                    self.text = first_half + second_half
-                self.update_t_surf(event.text)
+                self.text_input(event.text)
 
         if self.active:
             self.render_text()
