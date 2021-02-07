@@ -107,17 +107,7 @@ class TextInputBox(pygame.sprite.Sprite):
     def cont_press(self, delay):
         """When the backspace key is pressed for longer than the delay. delete from self.text once a frame"""
         if time.time() - self.backspace["pressed_start_time"] > delay and self.backspace["pressed"]:
-            if self.cursor_index == -1:
-                self.text = self.text[:-1]
-            elif self.cursor_index == -2:
-                return
-            else:
-                first_half = self.text[:self.cursor_index]
-                second_half = self.text[self.cursor_index + 1:]
-                self.text = first_half + second_half
-                self.cursor_index -= 1
-                if self.cursor_index == -1:
-                    self.cursor_index = -2
+            self.backspace_pressed()
         elif self.arrows["left_pressed"] and self.arrows["right_pressed"]:
             pass
         elif self.arrows["left_pressed"] and time.time() - self.arrows["left_s_time"] > delay:
@@ -163,21 +153,31 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.cursor_index = -1
 
     def backspace_pressed(self):
-        if self.cursor_index == -2:
-            pass
-        self.backspace["pressed_start_time"] = time.time()
-        self.backspace["pressed"] = True
-
-        if self.cursor_index != -1:
+        if self.cursor_index == -1:
+            self.text = self.text[:-1]
+        elif self.cursor_index == -2:
+            return
+        else:
             first_half = self.text[:self.cursor_index]
             second_half = self.text[self.cursor_index + 1:]
             self.text = first_half + second_half
             self.cursor_index -= 1
             if self.cursor_index == -1:
-                print("set cursor to start pos")
                 self.cursor_index = -2
+
+    def del_key_pressed(self):
+        if self.cursor_index == -1:
+            return
+        elif self.cursor_index == -2:
+            self.text = self.text[1:]
         else:
-            self.text = self.text[:-1]
+            first_half = self.text[:self.cursor_index + 1]
+            print(first_half)
+            second_half = self.text[self.cursor_index + 2:]
+            print(second_half)
+            self.text = first_half + second_half
+            if self.cursor_index == len(self.text) - 1:
+                self.cursor_index = -1
 
     def render_text(self):
         if not self.text and not self.active:
@@ -240,9 +240,13 @@ class TextInputBox(pygame.sprite.Sprite):
                 elif event.key == pygame.K_RETURN:
                     self.active = False
                     self.update_t_surf()
-                    self.render_text()
                 elif event.key == pygame.K_BACKSPACE:
+                    self.backspace["pressed_start_time"] = time.time()
+                    self.backspace["pressed"] = True
                     self.backspace_pressed()
+                    self.update_t_surf()
+                elif event.key == pygame.K_DELETE:
+                    self.del_key_pressed()
                     self.update_t_surf()
             if event.type == pygame.TEXTINPUT and self.active:
                 self.text_input(event.text)
