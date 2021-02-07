@@ -46,6 +46,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.flash = False
         self.backspace = {"pressed": False, "pressed_start_time": 0.0}
         self.arrows = {"left_pressed": False, "right_pressed": False, "left_s_time": 0.0, "right_s_time": 0.0}
+        self.delete = {"pressed": False, "pressed_start_time": 0.0}
         self.default_text = default_text
         self.text_widths = {"current": 0}
         self.t_surf = None
@@ -90,8 +91,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     break
             else:
                 self.cursor_index = -1
-        if len(self.text) == self.cursor_index + 1:
-            self.cursor_index = -1
+        self.cursor_end_check()
 
     def cursor_blink(self, speed):
         """Works out when to blink the cursor based on speed(the amount of frames)"""
@@ -114,6 +114,8 @@ class TextInputBox(pygame.sprite.Sprite):
             self.move_cursor_with_arrows("left")
         elif self.arrows["right_pressed"] and time.time() - self.arrows["right_s_time"] > delay:
             self.move_cursor_with_arrows("right")
+        elif self.delete["pressed"] and time.time() - self.delete["pressed_start_time"] > delay:
+            self.del_key_pressed()
         self.update_t_surf()
 
     def text_input(self, character):
@@ -149,8 +151,7 @@ class TextInputBox(pygame.sprite.Sprite):
                 self.cursor_index = 0
             else:
                 self.cursor_index += 1
-                if self.cursor_index == len(self.text) - 1:
-                    self.cursor_index = -1
+                self.cursor_end_check()
 
     def backspace_pressed(self):
         if self.cursor_index == -1:
@@ -176,8 +177,12 @@ class TextInputBox(pygame.sprite.Sprite):
             second_half = self.text[self.cursor_index + 2:]
             print(second_half)
             self.text = first_half + second_half
-            if self.cursor_index == len(self.text) - 1:
-                self.cursor_index = -1
+            self.cursor_end_check()
+
+    def cursor_end_check(self):
+        """Checks if the cursor is at the end of the self.text string and changes the cursor_ind to -1"""
+        if self.cursor_index == len(self.text) - 1:
+            self.cursor_index = -1
 
     def render_text(self):
         if not self.text and not self.active:
@@ -228,6 +233,8 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.arrows["left_pressed"] = False
                 elif event.key == pygame.K_RIGHT:
                     self.arrows["right_pressed"] = False
+                elif event.key == pygame.K_DELETE:
+                    self.delete["pressed"] = False
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_LEFT:
                     self.move_cursor_with_arrows("left")
@@ -246,6 +253,8 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.backspace_pressed()
                     self.update_t_surf()
                 elif event.key == pygame.K_DELETE:
+                    self.delete["pressed_start_time"] = time.time()
+                    self.delete["pressed"] = True
                     self.del_key_pressed()
                     self.update_t_surf()
             if event.type == pygame.TEXTINPUT and self.active:
