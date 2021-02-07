@@ -162,6 +162,23 @@ class TextInputBox(pygame.sprite.Sprite):
                 if self.cursor_index == len(self.text) - 1:
                     self.cursor_index = -1
 
+    def backspace_pressed(self):
+        if self.cursor_index == -2:
+            pass
+        self.backspace["pressed_start_time"] = time.time()
+        self.backspace["pressed"] = True
+
+        if self.cursor_index != -1:
+            first_half = self.text[:self.cursor_index]
+            second_half = self.text[self.cursor_index + 1:]
+            self.text = first_half + second_half
+            self.cursor_index -= 1
+            if self.cursor_index == -1:
+                print("set cursor to start pos")
+                self.cursor_index = -2
+        else:
+            self.text = self.text[:-1]
+
     def render_text(self):
         if not self.text and not self.active:
             self.t_surf = self.font.render(self.default_text, True, self.text_colour, self.backcolor)
@@ -169,7 +186,7 @@ class TextInputBox(pygame.sprite.Sprite):
         if self.cursor_index == -1:
             curs_pos_x = self.text_widths["current"] + 5
         else:
-            curs_pos_x = self.find_cursor_pos() + 5
+            curs_pos_x = self.find_cursor_pos() + 4
         self.image = pygame.Surface((max(self.width, self.text_widths["current"] + self.margin * 2),
                                      self.t_surf.get_height() + self.margin),
                                     pygame.SRCALPHA)
@@ -178,6 +195,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.image.blit(self.t_surf, (5, 0))
         if self.active:
             outline_colour = WHITE
+            # draw the cursor
             if self.flash:
                 pygame.draw.rect(self.image, WHITE, pygame.Rect((curs_pos_x, int(self.margin * 2)),
                                                                 (2, self.image.get_height() - int(self.margin * 4))))
@@ -186,6 +204,7 @@ class TextInputBox(pygame.sprite.Sprite):
                                                                (2, self.image.get_height() - int(self.margin * 4))))
         else:
             outline_colour = GREY
+        # Draw text box outline
         pygame.draw.rect(self.image, outline_colour, self.image.get_rect().inflate(-2, -2), 2)
 
         self.rect = self.image.get_rect(topleft=self.pos)
@@ -223,21 +242,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.update_t_surf()
                     self.render_text()
                 elif event.key == pygame.K_BACKSPACE:
-                    if self.cursor_index == -2:
-                        continue
-                    self.backspace["pressed_start_time"] = time.time()
-                    self.backspace["pressed"] = True
-
-                    if self.cursor_index != -1:
-                        first_half = self.text[:self.cursor_index]
-                        second_half = self.text[self.cursor_index + 1:]
-                        self.text = first_half + second_half
-                        self.cursor_index -= 1
-                        if self.cursor_index == -1:
-                            print("set cursor to start pos")
-                            self.cursor_index = -2
-                    else:
-                        self.text = self.text[:-1]
+                    self.backspace_pressed()
                     self.update_t_surf()
             if event.type == pygame.TEXTINPUT and self.active:
                 self.text_input(event.text)
