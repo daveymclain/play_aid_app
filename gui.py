@@ -45,6 +45,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.tick = 0
         self.flash = False
         self.backspace = {"pressed": False, "pressed_start_time": 0.0}
+        self.arrows = {"left_pressed": False, "right_pressed": False, "left_s_time": 0.0, "right_s_time": 0.0}
         self.default_text = default_text
         self.text_widths = {"current": 0}
         self.t_surf = None
@@ -103,7 +104,7 @@ class TextInputBox(pygame.sprite.Sprite):
         else:
             self.tick += 1
 
-    def backspace_cont_press(self, delay):
+    def cont_press(self, delay):
         """When the backspace key is pressed for longer than the delay. delete from self.text once a frame"""
         if time.time() - self.backspace["pressed_start_time"] > delay and self.backspace["pressed"]:
             if self.cursor_index == -1:
@@ -117,6 +118,12 @@ class TextInputBox(pygame.sprite.Sprite):
                 self.cursor_index -= 1
                 if self.cursor_index == -1:
                     self.cursor_index = -2
+        elif self.arrows["left_pressed"] and self.arrows["right_pressed"]:
+            pass
+        elif self.arrows["left_pressed"] and time.time() - self.arrows["left_s_time"] > delay:
+            self.move_cursor_with_arrows("left")
+        elif self.arrows["right_pressed"] and time.time() - self.arrows["right_s_time"] > delay:
+            self.move_cursor_with_arrows("right")
         self.update_t_surf()
 
     def text_input(self, character):
@@ -155,7 +162,6 @@ class TextInputBox(pygame.sprite.Sprite):
                 if self.cursor_index == len(self.text) - 1:
                     self.cursor_index = -1
 
-
     def render_text(self):
         if not self.text and not self.active:
             self.t_surf = self.font.render(self.default_text, True, self.text_colour, self.backcolor)
@@ -186,10 +192,9 @@ class TextInputBox(pygame.sprite.Sprite):
 
     def update(self, event_list):
         self.cursor_blink(40)
-        self.backspace_cont_press(0.5)
+        self.cont_press(0.5)
 
         for event in event_list:
-            print(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.active = bool(self.rect.collidepoint(event.pos))
                 self.update_t_surf()
@@ -200,15 +205,20 @@ class TextInputBox(pygame.sprite.Sprite):
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_BACKSPACE:
                     self.backspace["pressed"] = False
+                elif event.key == pygame.K_LEFT:
+                    self.arrows["left_pressed"] = False
+                elif event.key == pygame.K_RIGHT:
+                    self.arrows["right_pressed"] = False
             if event.type == pygame.KEYDOWN and self.active:
-
                 if event.key == pygame.K_LEFT:
                     self.move_cursor_with_arrows("left")
-                if event.key == pygame.K_RIGHT:
+                    self.arrows["left_pressed"] = True
+                    self.arrows["left_s_time"] = time.time()
+                elif event.key == pygame.K_RIGHT:
                     self.move_cursor_with_arrows("right")
-
-
-                if event.key == pygame.K_RETURN:
+                    self.arrows["right_pressed"] = True
+                    self.arrows["right_s_time"] = time.time()
+                elif event.key == pygame.K_RETURN:
                     self.active = False
                     self.update_t_surf()
                     self.render_text()
