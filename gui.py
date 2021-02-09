@@ -5,9 +5,10 @@ WHITE = (255, 255, 255)
 GREY = (127, 127, 127)
 
 
-class Button:
-    def __init__(self, surface, name="button", colour=(255, 0, 0), colour_pressed=(100, 0, 0),
-                 pos=(50, 100), size=(200, 50), rounded_corner=5, text_colour=(0, 0, 0), text_size=32):
+class Button(pygame.sprite.Sprite):
+    def __init__(self, surface, name="button", colour=(255, 0, 0), colour_pressed=(100, 0, 0), pos=(50, 100),
+                 size=(200, 50), rounded_corner=5, text_colour=(0, 0, 0), text_size=32):
+        super().__init__()
         self.font = pygame.font.SysFont('Comic Sans MS', 32)
         self.text = self.font.render(name, True, text_colour)
         self.rect = pygame.Rect(pos, size)
@@ -17,8 +18,14 @@ class Button:
                             "button_pos": pos, "button_size": size}
         self.button_text_attr = {"name": name, "text_colour": text_colour, "text_size": text_size}
 
-    def draw(self, pressed=False):
-        if pressed and self.mouse_over:
+        self.click = False
+        self.released = False
+        self.pressed = False
+        self.mouse_pos = (0, 0)
+
+    def draw(self):
+        """Display the button on the surface"""
+        if self.click and self.rect.collidepoint(self.mouse_pos):
             pygame.draw.rect(self.surface, self.button_attr["colour_pressed"], self.rect,
                              border_radius=self.button_attr["rounded_corner"])
         else:
@@ -28,8 +35,23 @@ class Button:
             self.button_attr["button_pos"][0] + self.button_attr["button_size"][0] // 2 - self.text.get_width() // 2,
             self.button_attr["button_pos"][1] + self.button_attr["button_size"][1] // 2 - self.text.get_height() // 2))
 
-    def collide_point(self, pos):
-        self.mouse_over = self.rect.collidepoint(pos)
+    def update(self, event_list) -> None:
+        for event in event_list:
+            if event.type == pygame.MOUSEMOTION:
+                self.mouse_pos = event.pos
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.click = True
+                else:
+                    self.click = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.released = True
+                    self.pressed = self.rect.collidepoint(self.mouse_pos)
+                    self.click = False
+            else:
+                self.released = False
+        self.draw()
 
 
 class TextInputBox(pygame.sprite.Sprite):
@@ -173,9 +195,7 @@ class TextInputBox(pygame.sprite.Sprite):
             self.text = self.text[1:]
         else:
             first_half = self.text[:self.cursor_index + 1]
-            print(first_half)
             second_half = self.text[self.cursor_index + 2:]
-            print(second_half)
             self.text = first_half + second_half
             self.cursor_end_check()
 
